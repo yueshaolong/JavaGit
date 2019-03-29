@@ -1,0 +1,7 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+.gradle/
+.idea/
+netty/out/
+netty/src/test/
+rxjava/src/test/
