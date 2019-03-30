@@ -27,7 +27,7 @@ public class NettyClient {
                                 ChannelPipeline p = channel.pipeline();
                                 p.addLast(
 //                                        new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Unpooled.copiedBuffer(ByteMessage.SEPARATOR.getBytes())),
-                                        new IdleStateHandler(0, 180, 0, TimeUnit.SECONDS),
+                                        new IdleStateHandler(0, 10, 0, TimeUnit.SECONDS),
                                         new ByteArrayEncoder(),
                                         new ByteArrayDecoder(),
                                         new ClientHandler());
