@@ -3,6 +3,7 @@ package com.ysl.netty.client;
 import com.ysl.netty.common.ByteMessage;
 import com.ysl.netty.common.ByteMessageType;
 import com.ysl.netty.common.MessageData;
+import com.ysl.netty.protobuf.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -25,6 +26,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         logger.info("Netty Client Inactive ");
+        NettyClient.connect();
     }
 
     @Override
@@ -57,12 +59,18 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void sendHeartbeat(ChannelHandlerContext ctx) {
-        MessageData messageData = new MessageData();
+        /*MessageData messageData = new MessageData();
         messageData.isHeartBeat = true;
         messageData.no = 1;
         messageData.byteMessageType = ByteMessageType.ACCESS_TO_SIGNAL_HEART;
-        sendMessage(ctx, ByteMessageType.ACCESS_TO_SIGNAL_HEART, messageData);
+        sendMessage(ctx, ByteMessageType.ACCESS_TO_SIGNAL_HEART, messageData);*/
         logger.info(1+"号netty客户端，向服务端发送心跳！！！");
+        Message.SearchRequests.Builder builder = Message.SearchRequests.newBuilder();
+        builder.setQuery("查询");
+        builder.setPageNumber(1);
+        builder.setResultPerPage(1);
+        Message.SearchRequests requests = builder.build();
+        ctx.writeAndFlush(requests);
     }
     private void sendMessage(ChannelHandlerContext ctx,  ByteMessageType byteMessageType, MessageData messageData)  {
         try {

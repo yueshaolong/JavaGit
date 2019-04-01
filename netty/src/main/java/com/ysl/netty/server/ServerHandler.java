@@ -3,6 +3,7 @@ package com.ysl.netty.server;
 import com.ysl.netty.common.ByteMessage;
 import com.ysl.netty.common.ByteMessageType;
 import com.ysl.netty.common.MessageData;
+import com.ysl.netty.protobuf.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -48,24 +49,24 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 //        super.channelRead(ctx, msg);
-        logger.info("netty Server 收到消息: ！！！"+ Arrays.toString((byte[]) msg));
-        MessageData messageData = ByteMessage.getInstance().decodeData((byte[]) msg);
+        logger.info("netty Server 收到消息: ！！！"+ msg);
+        responseHeartbeat(ctx);
+//        MessageData messageData = ByteMessage.getInstance().decodeData((byte[]) msg);
 //        logger.info("服务，netty服务端收到消息: ！！！"+messageData);
-        if (messageData == null){
-            logger.error("服务中，netty服务端收到消息为空 ！！！");
-            return;
-        }
-
-        if (messageData.byteMessageType == ByteMessageType.ACCESS_TO_SIGNAL_HEART){
-            logger.info("服务，收到"+messageData.no+"号netty客户端发来的心跳！！！");
-            noToAddressMap.put(messageData.no, ctx.channel().remoteAddress().toString());
-            logger.info("收到心跳后：noToAddressMap = "+noToAddressMap);
-            sendHeartbeat(ctx);
-        }else if (messageData.byteMessageType == ByteMessageType.TERMINAL_CONNECTION){
-            logger.info("服务，收到"+messageData.no+"号netty客户端发来的连接状态！！！");
-        }else if (messageData.byteMessageType == ByteMessageType.TERMINAL_AND_SIGNAL_MESSAGE){
-            logger.info("服务，收到"+messageData.no+"号netty客户端发来的命令！！！");
-        }
+//        if (messageData == null){
+//            logger.error("服务中，netty服务端收到消息为空 ！！！");
+//            return;
+//        }
+//
+//        if (messageData.byteMessageType == ByteMessageType.ACCESS_TO_SIGNAL_HEART){
+//            logger.info("服务，收到"+messageData.no+"号netty客户端发来的心跳！！！");
+//            noToAddressMap.put(messageData.no, ctx.channel().remoteAddress().toString());
+//            logger.info("收到心跳后：noToAddressMap = "+noToAddressMap);
+//        }else if (messageData.byteMessageType == ByteMessageType.TERMINAL_CONNECTION){
+//            logger.info("服务，收到"+messageData.no+"号netty客户端发来的连接状态！！！");
+//        }else if (messageData.byteMessageType == ByteMessageType.TERMINAL_AND_SIGNAL_MESSAGE){
+//            logger.info("服务，收到"+messageData.no+"号netty客户端发来的命令！！！");
+//        }
     }
 
     @Override
@@ -94,13 +95,18 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void sendHeartbeat(ChannelHandlerContext ctx) {
-        MessageData messageData = new MessageData();
+    private void responseHeartbeat(ChannelHandlerContext ctx) {
+        /*MessageData messageData = new MessageData();
         messageData.isHeartBeat = true;
         messageData.no = 1;
         messageData.byteMessageType = ByteMessageType.ACCESS_TO_SIGNAL_HEART;
-        sendMessage(ctx, ByteMessageType.ACCESS_TO_SIGNAL_HEART, messageData);
+        sendMessage(ctx, ByteMessageType.ACCESS_TO_SIGNAL_HEART, messageData);*/
         logger.info("服务端回复心跳！！！");
+        Message.SearchResponse.Builder builder = Message.SearchResponse.newBuilder();
+        builder.setResultCode(0);
+        builder.setResult(Message.SearchResponse.ResultDes.newBuilder().setDes("成功").build());
+        Message.SearchResponse response = builder.build();
+        ctx.writeAndFlush(response);
     }
     private void sendMessage(ChannelHandlerContext ctx,  ByteMessageType byteMessageType, MessageData messageData)  {
         try {

@@ -1,6 +1,7 @@
 package com.ysl.netty.server;
 
 
+import com.ysl.netty.protobuf.Message;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,6 +11,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.bytes.ByteArrayDecoder;
 import io.netty.handler.codec.bytes.ByteArrayEncoder;
+import io.netty.handler.codec.protobuf.*;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.log4j.Logger;
 
@@ -33,8 +37,8 @@ public class NettyServer {
 //                            new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 1,0,1),
 //                            new DelimiterBasedFrameDecoder(Integer.MAX_VALUE, Unpooled.copiedBuffer(ByteMessage.SEPARATOR.getBytes())),
                                     new IdleStateHandler(300, 0, 0, TimeUnit.SECONDS),
-                                    new ByteArrayEncoder(),
-                                    new ByteArrayDecoder(),
+                                    new ProtobufEncoder(),
+                                    new ProtobufDecoder(Message.SearchRequests.getDefaultInstance()),
                                     new ServerHandler());
                         }
                     });
