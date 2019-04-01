@@ -1,4 +1,5 @@
 rootProject.name = 'myjava'
 include 'netty'
 include 'rxjava'
+include 'base'
 
