@@ -1,4 +1,4 @@
-package com.ysl.rxjava;
+package com.ysl.rxjava.SyncThread;
 
 import java.util.TimerTask;
 import java.util.concurrent.*;
