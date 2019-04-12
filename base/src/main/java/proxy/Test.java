@@ -4,10 +4,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-public class NetClient {
+public class Test {
     public static void main(String[] args) {
         NetUtil httpUtil = new HttpUtil();
+        NetUtil okHttp = new OkHttpUtil();
         NetUtil netUtilProxy = new NetUtilProxy(httpUtil);
+        NetUtil netUtilProxy1 = new NetUtilProxy(okHttp);
         System.out.println(netUtilProxy.getData());
 
         System.out.println("-----------------------------");
