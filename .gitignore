@@ -3,5 +3,8 @@
 .gradle/
 .idea/
 netty/out/
+base/out/
+rxjava/out/
 netty/src/test/
 rxjava/src/test/
+base/src/test/
