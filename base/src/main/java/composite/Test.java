@@ -6,7 +6,7 @@ public class Test {
 
         File textFile = new TextFile();
         folder.addFile(textFile);
-
+        //new 子文件夹
         File subFolder = new Folder();
         File videoFile = new VideoFile();
         subFolder.addFile(videoFile);
