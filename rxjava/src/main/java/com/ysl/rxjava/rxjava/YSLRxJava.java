@@ -6,6 +6,7 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.*;
 import io.reactivex.observables.GroupedObservable;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.Subject;
 import org.apache.log4j.Logger;
 
@@ -20,7 +21,7 @@ public class YSLRxJava {
     public static void main(String[] args) {
         System.out.println("Hello World!" + "哈哈哈");
 
-//        createObserver();
+        createObserver();
         operator();
     }
 
@@ -107,6 +108,8 @@ public class YSLRxJava {
      * 操作符的使用
      */
     public static void operator() {
+
+        //背压模式；是指在异步场景中，被观察者发送事件速度远快于观察者的处理速度的情况下，一种告诉上游的被观察者降低发送速度的策略。
         Flowable.create(new FlowableOnSubscribe<String>() {
             @Override
             public void subscribe(FlowableEmitter<String> emitter) throws Exception {
@@ -126,6 +129,12 @@ public class YSLRxJava {
 
 
 
+        //发射数据并匹配为integer类型；打印完整流程的日志
+//        onNext : doOnSubscribe:io.reactivex.internal.operators.observable.ObservableDoOnEach$DoOnEachObserver@515f550a
+//        onNext : subscribe:1
+//        onNext : throwable:java.lang.ClassCastException: Cannot cast java.lang.String to java.lang.Integer
+//        onNext : doOnTerminate
+//        onNext : subscribe:java.lang.ClassCastException: Cannot cast java.lang.String to java.lang.Integer
         Observable.just(1,"2",3)
                 .cast(Integer.class)
                 .doOnComplete(new Action() {
@@ -165,7 +174,9 @@ public class YSLRxJava {
                 });
 
 
-
+        //发射数据并匹配为integer类型；匹配失败后，打印错误日志；但不影响前面发射成功的数据
+//        onNext : retryWhen : throwableObservable
+//        onNext : retryWhen : 1
         Observable.just(1,"2",3)
                 .cast(Integer.class)
                 .retryWhen(new Function<Observable<Throwable>, ObservableSource<String>>() {
@@ -193,7 +204,11 @@ public class YSLRxJava {
 
 
 
-
+        //发射数据并匹配为integer类型；匹配失败后，又重试两次；再失败抛出异常
+//        onNext : retry : 1
+//        onNext : retry : 1
+//        onNext : retry : 1
+//        onNext : retry : java.lang.ClassCastException: Cannot cast java.lang.String to java.lang.Integer
         Observable.just(1,"2",3)
                 .cast(Integer.class)
                 .retry(2)
@@ -210,7 +225,9 @@ public class YSLRxJava {
                 });
 
 
-
+        //发射数据并匹配为integer类型；匹配失败后，发射一个错误码
+//        onNext : onErrorReturn : 1
+//        onNext : onErrorReturn : 100
         Observable.just(1,"2",3)
                 .cast(Integer.class)
                 .onErrorReturn(new Function<Throwable, Integer>() {
@@ -228,6 +245,11 @@ public class YSLRxJava {
 
 
 
+        //发射数据并匹配为integer类型；匹配失败后，发射另一组数据
+//        onNext : onErrorResumeNext : 1
+//        onNext : onErrorResumeNext : 123
+//        onNext : onErrorResumeNext : 22
+//        onNext : onErrorResumeNext : 32
         Observable.just(1,"2",3)
                 .cast(Integer.class)
                 .onErrorResumeNext(Observable.just(123,22,32))
@@ -240,7 +262,7 @@ public class YSLRxJava {
 
 
 
-
+        //把数据分割成了Observable，每个Observable的数据个数为2
         Observable.just(2,3,5,6)
                 .window(2)
                 .subscribe(new Consumer<Observable<Integer>>() {
@@ -255,8 +277,11 @@ public class YSLRxJava {
                     }
                 });
 
+        //window与buffer区别：window是把数据分割成了Observable，buffer是把数据分割成List
 
-
+        //把发射的数据以集合方式接收，并指定集合大小为2；
+//        onNext : buffer : [2, 3]
+//        onNext : buffer : [5, 6]
         Observable.just(2,3,5,6)
                 .buffer(2)
                 .subscribe(new Consumer<List<Integer>>() {
@@ -268,6 +293,11 @@ public class YSLRxJava {
 
 
 
+        //对发射数据进行跟组处理：
+//        onNext : groupBy : 偶数:2
+//        onNext : groupBy : 奇数:3
+//        onNext : groupBy : 奇数:5
+//        onNext : groupBy : 偶数:6
         Observable.just(2,3,5,6)
                 .groupBy(new Function<Integer, String>() {
                     @Override
@@ -289,6 +319,7 @@ public class YSLRxJava {
 
 
 
+        //默认添加了初始值-1；接收到前后两个相加的结果：-1，1，4，9
         Observable.just(2,3,5)
                 .scan(-1,new BiFunction<Integer, Integer, Integer>() {
                     @Override
@@ -305,6 +336,7 @@ public class YSLRxJava {
 
 
 
+        //对发射的数据进行前后相加；输出：2，5，10
         Observable.just(2,3,5)
                 .scan(new BiFunction<Integer, Integer, Integer>() {
                     @Override
@@ -321,6 +353,11 @@ public class YSLRxJava {
 
 
 
+        //对发射数据进行一组处理
+//        onNext : concatMap : 2
+//        onNext : concatMap : 20
+//        onNext : concatMap : 200
+//        onNext : concatMap : 2000
         Observable.just(2,3,5)
                 .concatMap(new Function<Integer, ObservableSource<String>>() {
                     @Override
@@ -346,6 +383,13 @@ public class YSLRxJava {
 
 
 
+        //对发射数据进行多次处理后返回；
+//        onNext : flatMapIterable : 20
+//        onNext : flatMapIterable : 200
+//        onNext : flatMapIterable : 30
+//        onNext : flatMapIterable : 300
+//        onNext : flatMapIterable : 50
+//        onNext : flatMapIterable : 500
         Observable.just(2,3,5)
                 .flatMapIterable(new Function<Integer, List<String>>() {
                     @Override
@@ -362,6 +406,11 @@ public class YSLRxJava {
 
 
 
+        //对发射数据进行处理后再发射出去；
+//        onNext : flatMap : 2
+//        onNext : flatMap : 20
+//        onNext : flatMap : 200
+//        onNext : flatMap : 2000
         Observable.just(2,3,5)
                 .flatMap(new Function<Integer, ObservableSource<String>>() {
                     @Override
@@ -388,6 +437,7 @@ public class YSLRxJava {
 
 
 
+        //发射数据匹配位integer类型
         Observable.just(2,8, 9, 3,4)
                 .cast(Integer.class)
                 .subscribe(new Consumer<Integer>() {
@@ -399,6 +449,7 @@ public class YSLRxJava {
 
 
 
+        //发射int数据，使用string接收
         Observable.just(2,8, 9, 3,4)
                 .map(new Function<Integer, String>() {
                     @Override
@@ -415,6 +466,7 @@ public class YSLRxJava {
 
 
 
+        //发射数据并用map接收，onNext : toMultimap : {key2=[value2], key3=[value3], key4=[value4], key9=[value9], key8=[value8]}
         Observable.just(2,8, 9, 3,4)
                 .toMultimap(new Function<Integer, String>() {
                     @Override
@@ -436,6 +488,7 @@ public class YSLRxJava {
 
 
 
+        //发射数据并以map形式接收onNext : toMap : {key2=value2, key3=value3, key4=value4, key9=value9, key8=value8}
         Observable.just(2,8, 9, 3,4)
                 .toMap(new Function<Integer, String>() {
                     @Override
@@ -643,28 +696,17 @@ public class YSLRxJava {
 
 
 
-//        Observable<Integer> observable1=Observable.create(new ObservableOnSubscribe<Integer>() {//TODO 未通过验证
-//            @Override
-//            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    emitter.onError(e);
-//                }
-//                emitter.onNext(1);
-//                emitter.onNext(2);
-//                emitter.onComplete();
-//            }
-//        });
-//        Observable<Integer> observable2=Observable.create(new ObservableOnSubscribe<Integer>() {
-//                                                              @Override
-//                                                              public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-//                                                                  emitter.onNext(3);
-//                                                                  emitter.onNext(4);
-//                                                                  emitter.onComplete();
-//                                                              }
-//                                                          });
-//        Observable.amb(observable1, observable2).subscribe();
+        //传递两个或多个Observable给Amb时，它只发射其中首先发射数据或通知（onError或onCompleted）的那个Observable的所有数据，
+        // 而其他所有的Observable的发射物将被丢弃。
+        Observable.ambArray(
+                Observable.just(1, 2, 3).delay(1, TimeUnit.SECONDS),//第一个Observable延迟1秒发射数据
+                Observable.just(4, 5, 6))
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
+                        System.out.println("onNext : ambArray : " + integer);
+                    }
+                });
 
 
 
@@ -921,16 +963,36 @@ public class YSLRxJava {
                 });
 
 
-        //每隔3秒发射一次数据
-        Observable.interval(3, TimeUnit.SECONDS)//TODO 未通过测试
+        //每隔1秒发射一次数据
+        Observable.interval(1, TimeUnit.SECONDS, Schedulers.trampoline())
                 .subscribe(new Consumer<Long>() {
                     @Override
                     public void accept(Long aLong) throws Exception {
                         System.out.println("onNext : interval : " + aLong);
                     }
                 });
-
-
+        //延迟1秒开始发射第一个数据，以后每个数据2秒发射一次
+        Observable.interval(1, 2, TimeUnit.SECONDS, Schedulers.trampoline())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        System.out.println("onNext : interval : " + aLong);
+                    }
+                });
+        //延迟1秒开始发射第一个数据，以后每个数据2秒发射一次
+        //数据是从20开始的，包括20；发射5个
+//        onNext : intervalRange : 20
+//        onNext : intervalRange : 21
+//        onNext : intervalRange : 22
+//        onNext : intervalRange : 23
+//        onNext : intervalRange : 24
+        Observable.intervalRange(20, 5, 1, 2, TimeUnit.SECONDS, Schedulers.trampoline())
+                .subscribe(new Consumer<Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        System.out.println("onNext : intervalRange : " + aLong);
+                    }
+                });
 
         //延迟2秒发射
         Observable.timer(2, TimeUnit.SECONDS)

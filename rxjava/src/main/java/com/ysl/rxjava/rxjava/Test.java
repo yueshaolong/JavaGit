@@ -1,14 +1,15 @@
 package com.ysl.rxjava.rxjava;
 
+import io.reactivex.*;
 import io.reactivex.Observable;
-import io.reactivex.functions.BiConsumer;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Predicate;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.*;
+import io.reactivex.observables.GroupedObservable;
+import io.reactivex.schedulers.Schedulers;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -21,17 +22,11 @@ public class Test {
     }
 
     public static void deal(){
-        Observable.just(2,8, 9, 3,4)
-                .toSortedList(new Comparator<Integer>() {
+        Observable.intervalRange(20, 5, 1, 2, TimeUnit.SECONDS, Schedulers.trampoline())
+                .subscribe(new Consumer<Long>() {
                     @Override
-                    public int compare(Integer integer, Integer t1) {
-                        return t1 - integer;
-                    }
-                })
-                .subscribe(new Consumer<List<Integer>>() {
-                    @Override
-                    public void accept(List<Integer> integers) throws Exception {
-                        System.out.println("onNext : toList : " + integers.toString());
+                    public void accept(Long aLong) throws Exception {
+                        System.out.println("onNext : intervalRange : " + aLong);
                     }
                 });
     }
