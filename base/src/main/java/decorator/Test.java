@@ -13,5 +13,8 @@ public class Test {
         //装饰模式：
         //1.在不改变原有功能下，对功能的增加
         //2.接口中实现的功能是基本功能，具体的装饰类DecoratorA、DecoratorB都是对基本功能的扩展
+        //上面的例子也可以写成这样：
+        DecoratorB decoratorB = new DecoratorB(new DecoratorA(new XiaoMing()));
+        decoratorB.method();
     }
 }
