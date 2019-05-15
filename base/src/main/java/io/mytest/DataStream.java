@@ -12,8 +12,12 @@ public class DataStream {
         path = relativelyPath + "/base/src/main/java/io/mytest/dataStream.txt";
         System.out.println("path"+ path);
 
-//        write();
+        write();
 
+        read();
+    }
+
+    public static void read() {
         try {
             //读和写要一一对应
             DataInputStream dataInputStream = new DataInputStream(new FileInputStream(new File(path)));
